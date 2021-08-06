@@ -53,8 +53,6 @@ router.put('/update', checkToken, async function(req,res, next){
     }
 });
 
-//비밀번호 변경
-
 //로그인 (이메일, 암호)
 //http://127.0.0.1:3000/member/login
 router.post('/login', async function(req,res, next){
@@ -184,7 +182,7 @@ router.get('/emailcheck',async function(req, res, next){
 });
 
 //비밀번호 변경(변경할 암호)
-//127.0.0.1:3000/member/changepw
+//[put]127.0.0.1:3000/member/changepw
 router.put('/changepw', checkToken, async function(req,res, next){
     try{
         //0. 전달 값 받기
@@ -221,6 +219,63 @@ router.put('/changepw', checkToken, async function(req,res, next){
     }
 });
 
+//로그아웃
+//[post]127.0.0.1:3000/member/logout
+router.post('/logout', checkToken, async function(req,res, next){
+    try{
+        //1. 인증 후 전달되는 값 받기
+        const email= req.idx;
+
+        //2. db연결
+        const dbconn     = await mongoclient.connect(mongourl);
+        const collection = dbconn.db("id311").collection("member7");
+
+        //3.db update를 통해 token 값 지우기
+        const query ={_id : email};
+        const changeData = {$set :{ token : ''}};
+        const result = await collection.updateOne(query, changeData);
+        console.log(result);
+
+        //4.db 닫기
+        dbconn.close();
+        //5.결과값 반환
+        if( result.matchedCount === 1){
+            return res.send( { ret:1, data: '로그아웃 성공'});
+        }
+        res.send( {ret:0, data:'로그아웃 실패'});
+    }
+    catch(error){
+        console.error(error); 
+        res.send( {ret:-1, data: error} ); 
+    }
+});
+
+//회원탈퇴
+//[delete]127.0.0.1:3000/member/delete
+router.delete('/delete', checkToken, async function(req,res, next){
+    try{
+        //1. 인증 후 전달되는 값 받기
+        const email= req.idx;
+        //2. db연결
+        const dbconn     = await mongoclient.connect(mongourl);
+        const collection = dbconn.db("id311").collection("member7");
+        //3.db update를 통해 token 값 지우기
+        const query ={_id : email};
+        const result = await collection.deleteOne(query);
+        console.log(result); //{   }
+        //4.db 닫기
+        dbconn.close();
+        //5.결과값 반환
+        if( result.deletedCount === 1){
+            return res.send( { ret:1, data: '회원탈퇴 성공'});
+        }
+        res.send( {ret:0, data:'회원탈퇴 실패'});
+    }
+    catch(error){
+        console.error(error); 
+        res.send( {ret:-1, data: error} ); 
+    }
+});
 
 
 module.exports = router;
