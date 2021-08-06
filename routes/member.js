@@ -39,6 +39,7 @@ router.put('/update', checkToken, async function(req,res, next){
             name : name,
             phone : phone}
         };
+        console.log(query, changeData);
         
         //3.변경
         const result1 = await collection.updateOne(query, changeData);
