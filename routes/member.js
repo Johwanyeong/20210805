@@ -184,39 +184,38 @@ router.get('/emailcheck',async function(req, res, next){
 
 //비밀번호 변경(변경할 암호)
 //[put]127.0.0.1:3000/member/changepw
-router.put('/changepw', checkToken, async function(req,res, next){
+router.put('/changepw', checkToken, async function(req, res, next) {
     try{
-        //0. 전달 값 받기
-        //checkToken에서 성공 req.idx <=이메일
+        // 0. 값받기
+        // checkToken에서 성공 req.idx   <= 이메일
         const email = req.idx;
-        const newpassword = req.body.newpassword;
-
-        //1.db연결
+        const newpassword =  req.body.newpassword;
+        console.log(email,newpassword);
+        // 1. DB연결
         const dbconn     = await mongoclient.connect(mongourl);
         const collection = dbconn.db("id311").collection("member7");
 
-        //2. newpassword hash 하기 => a -> afasdfasdfefq232r
+        // 2. newpassword hash 하기 => a  => 487fejfe8r3u9y8fejir3i8
         const hash = crypto.createHmac('sha256', email)
             .update(newpassword).digest('hex');
 
-        //3.db에 수정
-        const query ={_id : email};
-        const changeData = {$set :{ password : hash}};
+        // 3. DB에 수정
+        const query = { _id :email};
+        const changeData = {$set : { password : hash }};
         const result = await collection.updateOne(query, changeData);
-        console.log(result);
 
-        //4.db닫기
+        // 4. DB 닫기
         dbconn.close();
 
-        //5.결과 반환
-        if( result.matchedCount === 1){
-            return res.send( { ret:1, data: '암호 수정 완료'});
+        // 5. 결과 반환
+        if( result.matchedCount === 1 ) {
+            return res.send( {ret:1, data:'암호 수정 완료'} );
         }
-        res.send( {ret:0, data:'암호 수정 실패'})
+        res.send( {ret:0, data:'암호 수정 실패'} );
     }
     catch(error){
-        console.error(error); 
-        res.send( {ret:-1, data: error} ); 
+        console.error(error);
+        res.send({ret:-1, data:error});
     }
 });
 
